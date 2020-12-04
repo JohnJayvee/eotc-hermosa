@@ -8,12 +8,20 @@
 <!--team section start-->
 <section class="px-120 pt-110 pb-80 gray-light-bg">
     <div class="container">
-        <div class="row">
+        <div class="row profile">
             @include('web.business.business_sidebar')
             <div class="col-md-9">
                 <div class="card">
                     <div class="card-body" style="padding: 3em">
-                        <h5 class="text-title text-uppercase">Business Information</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 class="text-title text-uppercase pt-2" style="font-size: 18px;">Business Information <a href="{{route('web.business.edit_business',[$profile->id])}}"><i class="fa fa-pencil-square fa-fw"></i></a></h5>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{{route('web.business.permit',[$profile->id])}}" class="custom-btn badge-primary-2 text-white " style="float: right;">Add Permits</a>
+                            </div>
+                        </div>
+                        
                         <div class="row underline mb-2">
                             <div class="col-md-4 mb-2">
                                 <label class="text-uppercase">{{str_replace("_"," ",$profile->business_type)}}</label>
@@ -69,7 +77,7 @@
                             </div>
                           
                         </div>
-                        <h5 class="text-title text-uppercase mt-4">Business Address Information</h5>
+                        <h5 class="text-title text-uppercase mt-4">Business Address Information <a href="{{route('web.business.edit_address',[$profile->id])}}"><i class="fa fa-pencil-square fa-fw"></i></a></h5>
                         <div class="row underline mb-2">
                             <div class="col-md-4">
                                 <label class="text-uppercase">{{$profile->unit_no}}</label>
@@ -99,7 +107,7 @@
                                 <p>Region</p>
                             </div>
                         </div>
-                        <h5 class="text-title text-uppercase mt-4">Business Address Information</h5>
+                        <h5 class="text-title text-uppercase mt-4">Other Informations<a href="{{route('web.business.edit_others',[$profile->id])}}"><i class="fa fa-pencil-square fa-fw"></i></a></h5>
                          <div class="row underline mb-2">
                             <div class="col-md-6">
                                 <label class="text-uppercase">{{$profile->sss_no ?: "-"}}</label>
@@ -121,6 +129,68 @@
                                 <p>PAGIBIG Number</p>
                             </div>
                             
+                        </div>
+                        <h5 class="text-title text-uppercase mt-4">Owner's Information</h5>
+                        <div class="row underline mb-2">
+                            <div class="col-md-4">
+                                <label class="text-uppercase">{{$profile->owner->fname}}</label>
+                                <p>Firstname</p>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-uppercase">{{$profile->owner->mname}}</label>
+                                <p>Middlename</p>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-uppercase">{{$profile->owner->lname}}</label>
+                                <p>Lastname</p>
+                            </div>
+                          
+                        </div>
+                         <div class="row underline mb-2">
+                            <div class="col-md-4">
+                                <label class="text-uppercase">{{$profile->owner->birtdate}}</label>
+                                <p>BirthDate</p>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-uppercase">{{$profile->owner->contact_number}}</label>
+                                <p>Contact Number</p>
+                            </div>
+                            <div class="col-md-4">
+                                <label >{{$profile->owner->email}}</label>
+                                <p>Email</p>
+                            </div>
+                          
+                        </div>
+                        <h5 class="text-title text-uppercase mt-4">Owner's Address Information</h5>
+                        <div class="row underline mb-2">
+                            <div class="col-md-4">
+                                <label class="text-uppercase">{{$profile->owner->unit_number}}</label>
+                                <p>Firstname</p>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-uppercase">{{$profile->owner->street_name}}</label>
+                                <p>Middlename</p>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-uppercase">{{$profile->owner->barangay_name}}</label>
+                                <p>Lastname</p>
+                            </div>
+                          
+                        </div>
+                         <div class="row underline mb-2">
+                            <div class="col-md-4">
+                                <label class="text-uppercase">{{$profile->owner->zipcode}}</label>
+                                <p>Zipcode</p>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-uppercase">{{$profile->owner->town_name}}</label>
+                                <p>Town/Municipality</p>
+                            </div>
+                            <div class="col-md-4">
+                                <label >{{$profile->owner->region_name}}</label>
+                                <p>Region</p>
+                            </div>
+                          
                         </div>
                     </div>
 

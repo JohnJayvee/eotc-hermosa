@@ -239,7 +239,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 
 <script type="text/javascript">
-     $.fn.get_region = function(input_region,input_province,input_city,input_brgy,selected){
+    $.fn.get_region = function(input_region,input_province,input_city,input_brgy,selected){
     
       $(input_city).empty().prop('disabled',true)
       $(input_brgy).empty().prop('disabled',true)

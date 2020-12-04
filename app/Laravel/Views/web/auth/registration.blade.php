@@ -46,7 +46,7 @@
                 <div class="card-body registration-card">
                     <h5 class="text-title text-uppercase ">Account Information</h5>
                     <div class="row">
-                        <div class="col-md-6 col-lg-6">
+                        <div class="col-md-5 col-lg-5">
                             <div class="form-group">
                                 <label class="text-form pb-2">First Name</label>
                                 <input type="text" class="form-control {{ $errors->first('fname') ? 'is-invalid': NULL  }} form-control-sm" name="fname" placeholder="Firstname" value="{{old('fname')}}">
@@ -55,12 +55,21 @@
                                 @endif
                             </div>
                         </div>
-                        <div class="col-md-6 col-lg-6">
+                        <div class="col-md-5 col-lg-5">
                             <div class="form-group mb-0">
                                 <label class="text-form pb-2">Last Name</label>
                                 <input type="text" class="form-control {{ $errors->first('lname') ? 'is-invalid': NULL  }} form-control-sm" name="lname" placeholder="Lastname" value="{{old('lname')}}">
                                 @if($errors->first('lname'))
                                     <small class="form-text pl-1" style="color:red;">{{$errors->first('lname')}}</small>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-lg-2">
+                            <div class="form-group mb-0">
+                                <label class="text-form pb-2">Suffix</label>
+                                <input type="text" class="form-control {{ $errors->first('suffix') ? 'is-invalid': NULL  }} form-control-sm" name="suffix" placeholder="Suffix" value="{{old('suffix')}}">
+                                @if($errors->first('suffix'))
+                                    <small class="form-text pl-1" style="color:red;">{{$errors->first('suffix')}}</small>
                                 @endif
                             </div>
                         </div>

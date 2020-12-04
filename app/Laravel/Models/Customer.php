@@ -41,7 +41,7 @@ class Customer extends Authenticatable{
      */
 
     protected $fillable = ['fname','lname','mname', 'email', 'contact_number',
-        'password'];
+        'password','suffix'];
 
 
     public function getNameAttribute(){

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Laravel\Traits\DateFormatter;
 use Str;
 
-class Business extends Model{
+class BusinessActivity extends Model{
     
     use SoftDeletes,DateFormatter;
     
@@ -16,7 +16,7 @@ class Business extends Model{
      *
      * @var string
      */
-    protected $table = "business";
+    protected $table = "business_activity";
 
     /**
      * The database connection used by the model.

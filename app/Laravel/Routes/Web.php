@@ -46,7 +46,15 @@ Route::group(['as' => "web.",
 			Route::get('create',['as' => "create",'uses' => "BusinessController@create"]);
 			Route::post('create',['uses' => "BusinessController@store"]);
 			Route::get('profile/{id?}',['as' => "profile",'uses' => "BusinessController@business_profile"]);
-
+			Route::get('edit-business/{id?}',['as' => "edit_business",'uses' => "BusinessController@business_edit"]);
+			Route::post('edit-business/{id?}',['uses' => "BusinessController@business_update"]);
+			Route::get('edit-address/{id?}',['as' => "edit_address",'uses' => "BusinessController@business_address_edit"]);
+			Route::post('edit-address/{id?}',['uses' => "BusinessController@address_update"]);
+			Route::get('edit-others/{id?}',['as' => "edit_others",'uses' => "BusinessController@other_info_edit"]);
+			Route::post('edit-others/{id?}',['uses' => "BusinessController@other_info_update"]);
+			Route::get('permit/{id?}',['as' => "permit",'uses' => "BusinessController@permits"]);
+			Route::post('permit/{id?}',['uses' => "BusinessController@permit_store"]);
+			Route::get('revert/{id?}',['as' => "revert",'uses' => "BusinessController@revert"]);
 		});
 	});
 	Route::get('pay/{code?}',['as' => "pay", 'uses' => "CustomerTransactionController@pay"]);
