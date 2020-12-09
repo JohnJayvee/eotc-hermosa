@@ -131,7 +131,11 @@
     @endif
     @if(Auth::user()->type == "processor")
       @if(in_array($transaction->status, ['PENDING', 'ONGOING']) AND $transaction->transaction_status == "COMPLETED")
-        <a data-url="{{route('system.transaction.process',[$transaction->id])}}?status_type=approved"  class="btn btn-primary mt-4 btn-approved border-5 text-white {{$transaction->status == 'approved' ? "isDisabled" : ""}}"><i class="fa fa-check-circle"></i> Approve Transactions</a>
+        @if($transaction->approved_level == 4)
+          <a data-url="{{route('system.transaction.process',[$transaction->id])}}?status_type=approved"  class="btn btn-primary mt-4 btn-approved border-5 text-white {{$transaction->status == 'approved' ? "isDisabled" : ""}}"><i class="fa fa-check-circle"></i> Approve Transactions</a>
+        @else
+          <a data-url="{{route('system.transaction.process',[$transaction->id])}}?status_type=approved"  class="btn btn-primary mt-4 btn-approved-level border-5 text-white {{$transaction->status == 'approved' ? "isDisabled" : ""}}"><i class="fa fa-check-circle"></i> Approve </a>
+        @endif
         <a  data-url="{{route('system.transaction.process',[$transaction->id])}}?status_type=declined" class="btn btn-danger mt-4 btn-decline border-5 text-white {{$transaction->status == 'approved' ? "isDisabled" : ""}}""><i class="fa fa-times-circle"></i> Decline Transactions</a>
       @endif
     @endif
@@ -209,6 +213,23 @@
         }
         if (result.value) {
           window.location.href = url + "&amount="+result.value;
+        }
+      });
+    });
+
+    $(".btn-approved-level").on('click', function(){
+      var url = $(this).data('url');
+      var self = $(this)
+      Swal.fire({
+        title: 'Are you sure you want to approved this transaction?',
+        text: "You will not be able to undo this action, proceed?",
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: `Proceed`,
+      }).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          window.location.href = url
         }
       });
     });

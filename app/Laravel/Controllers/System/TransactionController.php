@@ -56,6 +56,7 @@ class TransactionController extends Controller{
 	}
 
 	public function pending (PageRequest $request){
+		
 		$this->data['page_title'] = "Pending Transactions";
 
 		$auth = Auth::user();
@@ -125,6 +126,11 @@ class TransactionController extends Controller{
 				->where(function($query){
 					if(strlen($this->data['selected_application_ammount_status']) > 0){
 						return $query->where('application_payment_status',$this->data['selected_application_ammount_status']);
+					}
+				})
+				->where(function($query){
+					if(strlen($this->data['auth']->processor_level) > 0){
+						return $query->where('approved_level',$this->data['auth']->processor_level);
 					}
 				})
 				->where(DB::raw("DATE(created_at)"),'>=',$this->data['start_date'])
@@ -383,7 +389,7 @@ class TransactionController extends Controller{
 			$new_transaction->modified_at = Carbon::now();
 			$new_transaction->hereby_check = $request->get('hereby_check');
 			$new_transaction->amount = $request->get('amount');
-
+			$new_transaction->approved_level = 1;
 			$new_transaction->save();
 
 			$new_transaction->code = 'EOTC-' . Helper::date_format(Carbon::now(), 'ym') . str_pad($new_transaction->id, 5, "0", STR_PAD_LEFT) . Str::upper(Str::random(3));
@@ -424,82 +430,120 @@ class TransactionController extends Controller{
 
 	}
 	public function process($id = NULL,PageRequest $request){
-		$type = strtoupper($request->get('status_type'));
 		DB::beginTransaction();
 		try{
-
-			
-
+			$type = strtoupper($request->get('status_type'));
 			$transaction = $request->get('transaction_data');
 			$application = Application::find($transaction->application_id);
+			switch ($type) {
+				case 'APPROVED':
+					if ($transaction->approved_level == 5) {
+						if (!is_numeric($request->input('amount'))){
+							session()->flash('notification-status', "failed");
+							session()->flash('notification-msg', "Invalid Amount.");
+							return redirect()->route('system.transaction.show',[$transaction->id]);
 
-			$transaction->status = $type;
-			$transaction->amount = $type == "APPROVED" ? $request->get('amount') : NULL;
-			$transaction->remarks = $type == "DECLINED" ? $request->get('remarks') : NULL;
-			$transaction->processor_user_id = Auth::user()->id;
-			$transaction->modified_at = Carbon::now();
-			if (!$transaction->document_reference_code) {
-				$transaction->document_reference_code = 'EOTC-DOC-' . Helper::date_format(Carbon::now(), 'ym') . str_pad($transaction->id, 5, "0", STR_PAD_LEFT) . Str::upper(Str::random(3));
+						}
+						if ($request->get('amount') < $application->partial_amount ?: 0) {
+							session()->flash('notification-status', "failed");
+							session()->flash('notification-msg', "Sorry, the amount should be not greater than the set partial amount.");
+							return redirect()->route('system.transaction.show',[$transaction->id]);
+						}
+
+						$transaction->status = $type;
+						$transaction->amount = $type == "APPROVED" ? $request->get('amount') : NULL;
+						$transaction->remarks = $type == "DECLINED" ? $request->get('remarks') : NULL;
+						$transaction->processor_user_id = Auth::user()->id;
+						$transaction->approved_level = Auth::user()->processor_level + 1;
+						$transaction->modified_at = Carbon::now();
+						if (!$transaction->document_reference_code) {
+							$transaction->document_reference_code = 'EOTC-DOC-' . Helper::date_format(Carbon::now(), 'ym') . str_pad($transaction->id, 5, "0", STR_PAD_LEFT) . Str::upper(Str::random(3));
+						}
+						$approved_by_id  = [];
+						array_push($approved_by_id, $transaction->approved_by ?: Auth::user()->id);
+						$transaction->approved_by = implode(",", $approved_by_id);
+						$transaction->save();
+
+						$requirements = TransactionRequirements::where('transaction_id',$transaction->id)->where('status',"pending")->update(['status' => "APPROVED"]);
+						$insert[] = [
+			            	'contact_number' => $transaction->contact_number,
+			            	'email' => $transaction->email,
+			                'ref_num' => $transaction->transaction_code,
+			                'amount' => $transaction->amount,
+			                'full_name' => $transaction->customer ? $transaction->customer->full_name : $transaction->customer_name,
+			                'application_name' => $transaction->application_name,
+			                'department_name' => $transaction->department_name,
+			                'modified_at' => Helper::date_only($transaction->modified_at)
+		            	];	
+
+						$notification_data = new SendApprovedReference($insert);
+					    Event::dispatch('send-sms-approved', $notification_data);
+
+					    $notification_data_email = new SendApprovedEmailReference($insert);
+					    Event::dispatch('send-email-approved', $notification_data_email);
+					    DB::commit();
+						session()->flash('notification-status', "success");
+						session()->flash('notification-msg', "Transaction has been successfully Processed.");
+						return redirect()->route('system.transaction.'.strtolower($type));
+					}else{
+						$existing_id  = [];
+						$new_id  = [];
+						array_push($existing_id, $transaction->approved_by);
+						array_push($new_id, Auth::user()->id);
+						array_merge($existing_id , $new_id);
+
+						$transaction->approved_level = Auth::user()->processor_level + 1;
+						$transaction->approved_by = implode(",",array_merge($existing_id , $new_id));
+						$transaction->save();
+						DB::commit();
+						session()->flash('notification-status', "success");
+						session()->flash('notification-msg', "Transaction has been successfully Processed.");
+						return redirect()->route('system.transaction.'.strtolower($type));
+					}
+
+					break;
+				case 'DECLINED':
+
+					$transaction->status = $type;
+					$transaction->amount = $type == "APPROVED" ? $request->get('amount') : NULL;
+					$transaction->remarks = $type == "DECLINED" ? $request->get('remarks') : NULL;
+					$transaction->processor_user_id = Auth::user()->id;
+					$transaction->modified_at = Carbon::now();
+					$transaction->approved_level = 1;
+					if (!$transaction->document_reference_code) {
+						$transaction->document_reference_code = 'EOTC-DOC-' . Helper::date_format(Carbon::now(), 'ym') . str_pad($transaction->id, 5, "0", STR_PAD_LEFT) . Str::upper(Str::random(3));
+					}
+					
+					$transaction->save();
+
+					$requirements = TransactionRequirements::where('transaction_id',$transaction->id)->where('status',"pending")->update(['status' => "DECLINED"]);
+					$insert[] = [
+		            	'contact_number' => $transaction->contact_number,
+		                'ref_num' => $transaction->document_reference_code,
+		                'email' => $transaction->email,
+		                'remarks' => $transaction->remarks,
+		                'full_name' => $transaction->customer ? $transaction->customer->full_name : $transaction->customer_name,
+		                'application_name' => $transaction->application_name,
+		                'department_name' => $transaction->department_name,
+		                'modified_at' => Helper::date_only($transaction->modified_at),
+		                'link' => env("APP_URL")."show-pdf/".$transaction->id,
+	            	];	
+
+					$notification_data = new SendDeclinedReference($insert);
+				    Event::dispatch('send-sms-declined', $notification_data);
+
+				    $notification_data_email = new SendDeclinedEmailReference($insert);
+				    Event::dispatch('send-email-declined', $notification_data_email);
+				    DB::commit();
+
+					session()->flash('notification-status', "success");
+					session()->flash('notification-msg', "Transaction has been successfully Processed.");
+					return redirect()->route('system.transaction.'.strtolower($type));
+					break;	
+				default:
+					# code...
+					break;
 			}
-			
-			$transaction->save();
-
-			if ($type == "APPROVED") {
-				if (!is_numeric($request->input('amount'))){
-					session()->flash('notification-status', "failed");
-					session()->flash('notification-msg', "Invalid Amount.");
-					return redirect()->route('system.transaction.show',[$transaction->id]);
-
-				}
-				if ($request->get('amount') < $application->partial_amount ?: 0) {
-					session()->flash('notification-status', "failed");
-					session()->flash('notification-msg', "Sorry, the amount should be not greater than the set partial amount.");
-					return redirect()->route('system.transaction.show',[$transaction->id]);
-				}
-				$requirements = TransactionRequirements::where('transaction_id',$transaction->id)->where('status',"pending")->update(['status' => "APPROVED"]);
-				$insert[] = [
-	            	'contact_number' => $transaction->contact_number,
-	            	'email' => $transaction->email,
-	                'ref_num' => $transaction->transaction_code,
-	                'amount' => $transaction->amount,
-	                'full_name' => $transaction->customer ? $transaction->customer->full_name : $transaction->customer_name,
-	                'application_name' => $transaction->application_name,
-	                'department_name' => $transaction->department_name,
-	                'modified_at' => Helper::date_only($transaction->modified_at)
-            	];	
-
-				$notification_data = new SendApprovedReference($insert);
-			    Event::dispatch('send-sms-approved', $notification_data);
-
-			    $notification_data_email = new SendApprovedEmailReference($insert);
-			    Event::dispatch('send-email-approved', $notification_data_email);
-			}
-			if ($type == "DECLINED") {
-				$requirements = TransactionRequirements::where('transaction_id',$transaction->id)->where('status',"pending")->update(['status' => "DECLINED"]);
-				$insert[] = [
-	            	'contact_number' => $transaction->contact_number,
-	                'ref_num' => $transaction->document_reference_code,
-	                'email' => $transaction->email,
-	                'remarks' => $transaction->remarks,
-	                'full_name' => $transaction->customer ? $transaction->customer->full_name : $transaction->customer_name,
-	                'application_name' => $transaction->application_name,
-	                'department_name' => $transaction->department_name,
-	                'modified_at' => Helper::date_only($transaction->modified_at),
-	                'link' => env("APP_URL")."show-pdf/".$transaction->id,
-            	];	
-
-				$notification_data = new SendDeclinedReference($insert);
-			    Event::dispatch('send-sms-declined', $notification_data);
-
-			    $notification_data_email = new SendDeclinedEmailReference($insert);
-			    Event::dispatch('send-email-declined', $notification_data_email);
-			}
-			
-
-			DB::commit();
-			session()->flash('notification-status', "success");
-			session()->flash('notification-msg', "Transaction has been successfully Processed.");
-			return redirect()->route('system.transaction.'.strtolower($type));
 		}catch(\Exception $e){
 			DB::rollback();
 			session()->flash('notification-status', "failed");

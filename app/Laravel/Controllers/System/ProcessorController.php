@@ -44,7 +44,7 @@ class ProcessorController extends Controller
 		}
 
 		$this->data['status'] = ['' => "Choose Payment Status",'PAID' => "Paid" , 'UNPAID' => "Unpaid"];
-		
+		$this->data['levels'] = ['' => "Choose Processor Level",'1' => "Level 1" , '2' => "Level 2",'3' => "Level 3" , '4' => "Level 4", '5' => "Level 5"];
 
 		$this->data['status_type'] = ['' => "Choose Status",'active' =>  "Active",'inactive' => "Inactive"];
 		$this->per_page = env("DEFAULT_PER_PAGE",10);
@@ -122,6 +122,7 @@ class ProcessorController extends Controller
 			$new_processor->type = strtolower($request->get('type'));
 			$new_processor->department_id = $auth->type == "office_head" ? $auth->department_id : $request->get('department_id');	
 			$new_processor->application_id = $request->get('application_id') ? implode(",", $request->get('application_id')) : NULL;
+			$new_processor->processor_level = strtolower($request->get('type')) == "processor" ? $request->get('processor_level') : NULL;
 			$new_processor->reference_id = $request->get('reference_number');
 			$new_processor->username = $request->get('username');
 			$new_processor->contact_number = $request->get('contact_number');
@@ -143,7 +144,7 @@ class ProcessorController extends Controller
 				
 			}
 			if ($new_processor->save()) {
-				$insert[] = [
+				/*$insert[] = [
 					'full_name' => $new_processor->fname ." " .$new_processor->lname,
 					'ref_id' => $new_processor->reference_id,
 	                'contact_number' => $new_processor->contact_number,
@@ -151,7 +152,7 @@ class ProcessorController extends Controller
 	                'type' => $new_processor->type
 	            ];	
 				$notification_data = new SendProcessorReference($insert);
-			    Event::dispatch('send-sms-processor', $notification_data);
+			    Event::dispatch('send-sms-processor', $notification_data);*/
 
 				DB::commit();
 				session()->flash('notification-status', "success");

@@ -73,6 +73,7 @@ class CustomerTransactionController extends Controller
 			$new_transaction->payment_status = $request->get('processing_fee') > 0 ? "UNPAID" : "PAID";
 			$new_transaction->transaction_status = $request->get('processing_fee') > 0 ? "PENDING" : "COMPLETED";
 			$new_transaction->process_by = "customer";
+			$new_transaction->approved_level = 1;
 			$new_transaction->save();
 
 			$new_transaction->code = 'EOTC-' . Helper::date_format(Carbon::now(), 'ym') . str_pad($new_transaction->id, 5, "0", STR_PAD_LEFT) . Str::upper(Str::random(3));

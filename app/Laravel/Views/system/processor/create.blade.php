@@ -75,6 +75,13 @@
           <p class="mt-1 text-danger">{!!$errors->first('application_id')!!}</p>
           @endif
         </div>
+        <div class="form-group" id="processor_level_container">
+          <label for="input_title">Processor Level</label>
+          {!!Form::select("processor_level", $levels, old('processor_level'), ['id' => "input_processor_level", 'class' => "custom-select".($errors->first('processor_level') ? ' is-invalid' : NULL)])!!}
+          @if($errors->first('processor_level'))
+          <p class="mt-1 text-danger">{!!$errors->first('processor_level')!!}</p>
+          @endif
+        </div>
         <div class="form-group">
           <label for="input_title">Username</label>
           <input type="text" class="form-control {{$errors->first('username') ? 'is-invalid' : NULL}}" id="input_username" name="username" placeholder="User Name" value="{{old('username')}}">
@@ -162,13 +169,22 @@
     if (type == "office_head") {
       $("#application_container").hide();
       $("#office_container").show();
+      $("#processor_level_container").hide();
+
     }else if(type == "admin"){
       $("#office_container").hide();
       $("#application_container").hide();
+      $("#processor_level_container").hide();
+
     }
-    else{
+    else if(type == "processor"){
       $("#application_container").show();
       $("#office_container").show();
+      $("#processor_level_container").show();
+    }else{
+      $("#application_container").hide();
+      $("#office_container").hide();
+      $("#processor_level_container").hide();
     }
 
   }).change();
