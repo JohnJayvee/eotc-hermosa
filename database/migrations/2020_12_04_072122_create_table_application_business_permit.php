@@ -61,6 +61,7 @@ class CreateTableApplicationBusinessPermit extends Migration
             $table->string('business_pagibig_no')->nullable();
             $table->string('ctc_no')->nullable();
             $table->string('tax_incentive')->nullable();
+            $table->string('tax_entity')->nullable();
             $table->string('ctc_date_issue')->nullable();
             $table->string('business_area')->nullable();
             $table->string('is_owned')->nullable();

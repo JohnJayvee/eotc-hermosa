@@ -26,7 +26,7 @@ class UpdateTableTransactionsAddFieldApprovedLevel extends Migration
      */
     public function down()
     {
-        Schema::table('user', function($table){
+        Schema::table('transaction', function($table){
             $table->dropColumn(['approved_level','approved_by']);
         });
     }

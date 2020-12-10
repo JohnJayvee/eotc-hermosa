@@ -249,10 +249,11 @@ class BusinessController extends Controller
 			case '2':
 				DB::beginTransaction();
 				try{
+					dd(session()->get('type'));
 					$new_business_permit = new BusinessPermit();
 					$new_business_permit->owner_user_id = $profile->customer_id;
 					$new_business_permit->business_id = $id;
-					$new_business_permit->type = $request->get('transaction_type');
+					$new_business_permit->type = session()->get('type');
 					$new_business_permit->owner_firstname = $profile->owner->fname;
 					$new_business_permit->owner_middlename = $profile->owner->mname;
 					$new_business_permit->owner_lastname = $profile->owner->lname;
@@ -262,13 +263,12 @@ class BusinessController extends Controller
 					$new_business_permit->owner_unit_no = $profile->owner->unit_number;
 					$new_business_permit->owner_street_address = $profile->owner->street_name;
 					$new_business_permit->owner_zipcode = $profile->owner->zipcode;
-					$new_business_permit->owner_town =$profile->owner->town;
-					$new_business_permit->owner_town_name =$profile->owner->town_name;
-					$new_business_permit->owner_region =$profile->owner->region;
-					$new_business_permit->owner_region_name=$profile->owner->region_name;
-					$new_business_permit->owner_brgy =$profile->owner->brgy;
-					$new_business_permit->owner_brgy_name  =$profile->owner->brgy_name;
-					$new_business_permit->business_amendment  = $request->get('business_amendment');
+					$new_business_permit->owner_town = $profile->owner->town;
+					$new_business_permit->owner_town_name = $profile->owner->town_name;
+					$new_business_permit->owner_region = $profile->owner->region;
+					$new_business_permit->owner_region_name = $profile->owner->region_name;
+					$new_business_permit->owner_brgy = $profile->owner->barangay;
+					$new_business_permit->owner_brgy_name  = $profile->owner->barangay_name;
 					$new_business_permit->business_name  = $profile->business_name;
 					$new_business_permit->business_dominant_name  = $profile->dominant_name;
 					$new_business_permit->business_bn_number  = $profile->bn_number;
@@ -290,6 +290,8 @@ class BusinessController extends Controller
 					$new_business_permit->business_philhealth_no = $profile->philhealth_no;
 					$new_business_permit->business_pagibig_no = $profile->pagibig_no;
 					$new_business_permit->business_tin_no = $profile->tin_no;
+					$new_business_permit->business_amendment  = $request->get('business_amendment');
+					$new_business_permit->tax_entity  = $request->get('tax_entity');
 					$new_business_permit->ctc_no  = $request->get('ctc_no');
 					$new_business_permit->ctc_date_issue  = $request->get('ctc_date_issue');
 					$new_business_permit->tax_incentive  = $request->get('tax_incentive');

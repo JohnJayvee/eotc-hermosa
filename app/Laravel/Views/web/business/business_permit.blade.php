@@ -9,9 +9,7 @@
             <div class="col-md-9">
                 @include('web._components.notifications')
                 <form class="create-form" method="POST" enctype="multipart/form-data">
-                    @include('system._components.notifications')
                     {!!csrf_field()!!}
-
                     <div class="card">
                         <div class="card-body">
                             <h5 class="text-title text-uppercase">Business Permit Form</h5>
